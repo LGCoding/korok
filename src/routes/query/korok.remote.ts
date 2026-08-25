@@ -1,0 +1,191 @@
+import { area, korok, finds, user } from '$lib/server/db/schema';
+import { command, query } from '$app/server';
+import { db } from '$lib/server/db';
+import { and, asc, count, desc, eq, max } from 'drizzle-orm';
+import { getCurrentUser } from '$lib/server/auth';
+import * as v from 'valibot';
+
+export const getKoroks = query(async () => {
+	const koroks = await db.select().from(korok).where(eq(korok.isRelease, true));
+	console.log(koroks);
+	return koroks;
+});
+
+export const getAreas = query(async () => {
+	const areas = await db.select().from(area);
+	return areas;
+});
+
+export const getKoroksAdmin = query(async () => {
+	const user = await getCurrentUser();
+	if (user?.role === 'admin') {
+		const koroks = await db.select().from(korok);
+		return koroks;
+	}
+	return [];
+});
+
+export const addKoroksAdmin = command(
+	v.object({
+		type: v.number(),
+		number: v.number(),
+		description: v.string(),
+		lat: v.number(),
+		lng: v.number(),
+		release: v.number(),
+		isRelease: v.boolean()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.insert(korok).values(e);
+			return true;
+		}
+		return false;
+	}
+);
+
+export const updateKoroksAdmin = command(
+	v.object({
+		type: v.number(),
+		number: v.number(),
+		description: v.string(),
+		lat: v.number(),
+		lng: v.number(),
+		release: v.number(),
+		isRelease: v.boolean(),
+		id: v.string()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.update(korok).set(e).where(eq(korok.id, e.id));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const deleteKoroksAdmin = command(
+	v.object({
+		id: v.string()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.delete(korok).where(eq(korok.id, e.id));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const addAreaAdmin = command(
+	v.object({
+		color: v.string(),
+		points: v.array(v.tuple([v.number(), v.number()]))
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.insert(area).values(e);
+			return true;
+		}
+		return false;
+	}
+);
+
+export const deleteAreaAdmin = command(
+	v.object({
+		id: v.number()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.delete(area).where(eq(area.id, e.id));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const getKorokFinds = query(async () => {
+	const korokStats = await db
+		.select({
+			korok: korok,
+			findCount: count(finds.id)
+		})
+		.from(korok)
+		.leftJoin(finds, eq(finds.korokId, korok.id))
+		.groupBy(korok.id)
+		.orderBy(desc(count(finds.id)));
+	return korokStats;
+});
+
+export const getUserFinds = query(async () => {
+	const userStats = await db
+		.select({
+			user: user,
+			koroksFound: count(finds.id),
+			lastFoundAt: max(finds.time)
+		})
+		.from(user)
+		.leftJoin(finds, eq(finds.userId, user.id))
+		.groupBy(user.id)
+		.orderBy(desc(count(finds.id)), asc(max(finds.time)));
+	return userStats;
+});
+
+export const logFind = command(
+	v.object({
+		korokId: v.string(),
+		userId: v.string(),
+		time: v.date()
+	}),
+	async (e) => {
+		const k = await db.query.korok.findFirst({
+			where: eq(korok.id, e.korokId)
+		});
+		if (!k) return false;
+		const f = await db.query.finds.findFirst({
+			where: and(eq(finds.korokId, e.korokId), eq(finds.userId, e.userId))
+		});
+		const userStats = await db
+			.select({
+				user: user,
+				koroksFound: count(finds.id),
+				lastFoundAt: max(finds.time)
+			})
+			.from(user)
+			.leftJoin(finds, eq(finds.userId, user.id))
+			.groupBy(user.id)
+			.where(eq(finds.userId, e.userId));
+		const korokStats = await db
+			.select({
+				korok: korok,
+				findCount: count(finds.id)
+			})
+			.from(korok)
+			.leftJoin(finds, eq(finds.korokId, korok.id))
+			.groupBy(korok.id)
+			.where(eq(finds.korokId, e.korokId));
+		if (f)
+			return {
+				found: true,
+				korok: k,
+				userFinds: userStats[0].koroksFound,
+				korokFinds: korokStats[0].findCount
+			};
+		await db.insert(finds).values({
+			korokId: e.korokId,
+			userId: e.userId,
+			time: e.time
+		});
+		return {
+			found: false,
+			korok: k,
+			userFinds: userStats[0].koroksFound,
+			korokFinds: korokStats[0].findCount
+		};
+	}
+);
