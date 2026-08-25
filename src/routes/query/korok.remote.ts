@@ -1,15 +1,94 @@
 import { area, korok, finds, user } from '$lib/server/db/schema';
 import { command, query } from '$app/server';
 import { db } from '$lib/server/db';
-import { and, asc, count, desc, eq, max } from 'drizzle-orm';
+import { and, asc, count, desc, eq, max, inArray } from 'drizzle-orm';
 import { getCurrentUser } from '$lib/server/auth';
 import * as v from 'valibot';
 
 export const getKoroks = query(async () => {
-	const koroks = await db.select().from(korok).where(eq(korok.isRelease, true));
-	console.log(koroks);
+	const koroks = await db
+		.select()
+		.from(korok)
+		.where(and(eq(korok.isRelease, true), eq(korok.isFindable, true)));
 	return koroks;
 });
+
+export const getAdminData = query(async () => {
+	const user = await getCurrentUser();
+	if (user?.role === 'admin') {
+		const koroks = await db
+			.select({ release: korok.release, count: count(), max: max(korok.number) })
+			.from(korok)
+			.groupBy(korok.release)
+			.orderBy(asc(korok.release));
+		return koroks;
+	}
+});
+
+export const releaseKoroks = command(
+	v.object({
+		release: v.number()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.update(korok).set({ isRelease: true }).where(eq(korok.release, e.release));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const releaseUnFindableAdmin = command(
+	v.object({
+		release: v.number()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.update(korok).set({ isFindable: false }).where(eq(korok.release, e.release));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const updateFindableAdmin = command(
+	v.object({
+		korokId: v.string(),
+		isFindable: v.boolean()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			await db.update(korok).set({ isFindable: e.isFindable }).where(eq(korok.id, e.korokId));
+			return true;
+		}
+		return false;
+	}
+);
+
+export const deleteReleaseKoroks = command(
+	v.object({
+		release: v.number()
+	}),
+	async (e) => {
+		const user = await getCurrentUser();
+		if (user?.role === 'admin') {
+			const ids = (
+				await db
+					.select({ id: finds.id })
+					.from(finds)
+					.innerJoin(korok, eq(finds.korokId, korok.id))
+					.where(eq(korok.release, e.release))
+			).map((i) => i.id);
+			await db.delete(finds).where(inArray(finds.id, ids));
+			await db.delete(korok).where(eq(korok.release, e.release));
+			return true;
+		}
+		return false;
+	}
+);
 
 export const getAreas = query(async () => {
 	const areas = await db.select().from(area);
@@ -73,6 +152,14 @@ export const deleteKoroksAdmin = command(
 	async (e) => {
 		const user = await getCurrentUser();
 		if (user?.role === 'admin') {
+			const ids = (
+				await db
+					.select({ id: finds.id })
+					.from(finds)
+					.innerJoin(korok, eq(finds.korokId, korok.id))
+					.where(eq(korok.id, e.id))
+			).map((i) => i.id);
+			await db.delete(finds).where(inArray(finds.id, ids));
 			await db.delete(korok).where(eq(korok.id, e.id));
 			return true;
 		}
@@ -117,6 +204,7 @@ export const getKorokFinds = query(async () => {
 		})
 		.from(korok)
 		.leftJoin(finds, eq(finds.korokId, korok.id))
+		.where(eq(korok.isFindable, true))
 		.groupBy(korok.id)
 		.orderBy(desc(count(finds.id)));
 	return korokStats;
@@ -131,6 +219,8 @@ export const getUserFinds = query(async () => {
 		})
 		.from(user)
 		.leftJoin(finds, eq(finds.userId, user.id))
+		.leftJoin(korok, eq(korok.id, finds.korokId))
+		.where(eq(korok.isFindable, true))
 		.groupBy(user.id)
 		.orderBy(desc(count(finds.id)), asc(max(finds.time)));
 	return userStats;
@@ -150,6 +240,13 @@ export const logFind = command(
 		const f = await db.query.finds.findFirst({
 			where: and(eq(finds.korokId, e.korokId), eq(finds.userId, e.userId))
 		});
+		if (!f) {
+			await db.insert(finds).values({
+				korokId: e.korokId,
+				userId: e.userId,
+				time: e.time
+			});
+		}
 		const userStats = await db
 			.select({
 				user: user,
@@ -176,11 +273,6 @@ export const logFind = command(
 				userFinds: userStats[0].koroksFound,
 				korokFinds: korokStats[0].findCount
 			};
-		await db.insert(finds).values({
-			korokId: e.korokId,
-			userId: e.userId,
-			time: e.time
-		});
 		return {
 			found: false,
 			korok: k,

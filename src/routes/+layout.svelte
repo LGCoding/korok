@@ -1,14 +1,13 @@
 <script lang="ts">
 	import './layout.css';
 	import 'leaflet/dist/leaflet.css';
-	import favicon from '#lib/assets/korok_hunt_logo.png';
-
-	import { ModeWatcher } from 'mode-watcher';
+	import { toggleMode, ModeWatcher } from 'mode-watcher';
 	import type { PageServerData } from './$types';
 	import Button from '#lib/components/ui/button/button.svelte';
 	import { enhance } from '$app/forms';
 	import { cn } from '$lib/utils';
 	import { page } from '$app/state';
+	import { MoonIcon, SunIcon } from 'lucide-svelte';
 
 	let { children, data }: PageServerData = $props();
 </script>
@@ -24,8 +23,8 @@
 	</li>
 {/snippet}
 
-<ModeWatcher />
-<svelte:head><link rel="icon" href={favicon} /> <title>Korok Hunt</title></svelte:head>
+<ModeWatcher defaultMode="light" />
+<svelte:head><link rel="icon" href="/korok_hunt_logo.png" /> <title>Korok Hunt</title></svelte:head>
 <header class="flex flex-wrap items-center border-b px-6 py-2 lg:px-16 lg:py-0">
 	<div class="flex flex-1 items-center justify-between">
 		<a href="/">
@@ -58,23 +57,25 @@
 					{@render link({ href: '/login', label: 'Login/Register' })}
 				{:else}
 					<form
-						class="flex flex-1 items-center justify-between"
+						class="flex flex-1 items-center justify-between pr-2"
 						method="post"
 						action="/login/?/signOut"
 						use:enhance
 					>
-						<Button variant="outline" type="submit">Sign out</Button>
+						<Button variant="outline" type="submit">{data.user?.name}: Sign out</Button>
 					</form>
 				{/if}
+				<Button onclick={toggleMode} variant="outline" size="icon">
+					<SunIcon
+						class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
+					/>
+					<MoonIcon
+						class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0"
+					/>
+					<span class="sr-only">Toggle theme</span>
+				</Button>
 			</ul>
 		</nav>
-		<!-- <a href="#" class="pointer-cursor mb-4 flex items-center justify-start lg:mb-0 lg:ml-4">
-			<img
-				class="h-10 w-10 rounded-full border-2 border-transparent hover:border-indigo-400"
-				src="https://pbs.twimg.com/profile_images/1128143121475342337/e8tkhRaz_normal.jpg"
-				alt="Andy Leverenz"
-			/>
-		</a> -->
 	</div>
 </header>
 {@render children()}

@@ -138,7 +138,7 @@
 		@apply bg-background text-foreground;
 	}
 	html {
-		@apply font-sans;
+		font-family: 'calamity';
 	}
 	select option {
 		@apply bg-background text-foreground;
@@ -336,4 +336,25 @@
 @font-face {
 	font-family: 'hylia';
 	src: url('HyliaSerifBeta-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'calamity';
+	src: url('Calamity-Regular.otf') format('opentype');
+}
+
+@font-face {
+	font-family: 'calamity';
+	font-weight: bold;
+	src: url('Calamity-Bold.otf') format('opentype');
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: hylia;
+	font-weight: unset !important;
 }

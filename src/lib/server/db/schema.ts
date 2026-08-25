@@ -13,7 +13,8 @@ export const korok = sqliteTable('korok', {
 	lat: real('lat').notNull(),
 	lng: real('lng').notNull(),
 	release: integer('release').notNull(),
-	isRelease: integer('is-release', { mode: 'boolean' }).notNull()
+	isRelease: integer('is-release', { mode: 'boolean' }).notNull(),
+	isFindable: integer('is-findable', { mode: 'boolean' }).default(true).notNull()
 });
 
 export const area = sqliteTable('area', {

@@ -9,13 +9,15 @@ export function cn(...inputs: ClassValue[]) {
 export async function generateQRCode({
 	id,
 	type,
-	number
+	number,
+	canvasP
 }: {
 	id: string;
 	type: number;
 	number: number;
+	canvasP?: HTMLCanvasElement;
 }) {
-	const canvas = document.createElement('canvas');
+	const canvas = canvasP ?? document.createElement('canvas');
 	const ctx = canvas.getContext('2d')!;
 
 	const base = new Image();
@@ -46,6 +48,7 @@ export async function generateQRCode({
 
 	await QRCode.toCanvas(qrCanvas, location.origin + '/find?id=' + id, {
 		width: 482,
+		version: 7,
 		margin: 0,
 		color: {
 			dark: '#000',
@@ -60,9 +63,9 @@ export async function generateQRCode({
 	);
 	ctx.fillStyle = '#d3973e';
 	ctx.beginPath();
-	ctx.rect(231, 231, 150, 150);
+	ctx.rect(239, 239, 150, 150);
 	ctx.fill();
-	ctx.drawImage(logo, 231, 231, 150, 150);
+	ctx.drawImage(logo, 239, 239, 150, 150);
 	const multiplier = Math.min(420 / overlay.width, 500 / overlay.height);
 
 	ctx.drawImage(
@@ -78,10 +81,12 @@ export async function generateQRCode({
 	ctx.textAlign = 'center';
 
 	ctx.fillText('#' + tripleNumber(number), 920, 587);
-	const link = document.createElement('a');
-	link.download = 'image.png';
-	link.href = canvas.toDataURL('image/png');
-	link.click();
+	if (!canvasP) {
+		const link = document.createElement('a');
+		link.download = 'image.png';
+		link.href = canvas.toDataURL('image/png');
+		link.click();
+	}
 }
 
 export function tripleNumber(number: number): string {

@@ -19,10 +19,11 @@
 		Polygon
 	} from 'leaflet';
 	import type * as geojson from 'geojson';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import * as Card from './ui/card/';
 	import { Button } from './ui/button';
 	import { cn } from '$lib/utils';
+	import { Badge } from './ui/badge';
 	let element: HTMLElement;
 	let {
 		markers,
@@ -83,14 +84,16 @@
 		id: 0,
 		type: 'area'
 	});
+	const changeMedia = (e: MediaQueryListEvent) => {
+		isMobile = e.matches;
+	};
 
 	onMount(async () => {
 		if (browser) {
+			mediaQuery?.addEventListener('change', changeMedia);
+			isMobile = mediaQuery?.matches ?? false;
 			L = await import('leaflet');
-			map = L.map(element, { scrollWheelZoom: false }).setView(
-				[42.73035819852768, -73.67996530989872],
-				15
-			);
+			map = L.map(element, {}).setView([42.72961061168427, -73.68059092559635], isMobile ? 15 : 16);
 			map.on('click', onMapClick);
 			iconNormal = L.icon({
 				iconUrl: 'map-pin.svg',
@@ -125,10 +128,11 @@
 			}).addTo(map);
 			if (isAdmin) {
 				m.addEventListener('contextmenu', (e) => {
+					console.log(window.scrollX);
 					polyContext = {
 						open: true,
 						x: e.originalEvent.clientX,
-						y: e.originalEvent.clientY,
+						y: e.originalEvent.clientY + document.documentElement.scrollTop,
 						id: marker.id,
 						type: 'korok'
 					};
@@ -150,7 +154,7 @@
 					polyContext = {
 						open: true,
 						x: e.originalEvent.clientX,
-						y: e.originalEvent.clientY,
+						y: e.originalEvent.clientY + document.documentElement.scrollTop,
 						id: area.id,
 						type: 'area'
 					};
@@ -200,6 +204,16 @@
 			if (onNewKorok) onNewKorok([e.latlng.lat, e.latlng.lng]);
 		}
 	};
+
+	let isMobile = $state(false);
+
+	const mediaQuery = browser ? window.matchMedia('(max-width: 640px)') : null;
+
+	onDestroy(() => {
+		if (mediaQuery) {
+			mediaQuery.removeEventListener('change', changeMedia);
+		}
+	});
 </script>
 
 <div class="flex flex-col items-center">
@@ -229,8 +243,9 @@
 		</Card.Root>
 	{/if}
 	{#if isAdmin}
-		<Card.Root class="flex flex-row rounded-none p-2">
-			Mode: {clickMode}
+		<Card.Root class="flex flex-row items-center rounded-none p-2">
+			<Badge variant="default" class="h-8 w-30">Mode: {clickMode || 'No Action'}</Badge>
+
 			<Button
 				onclick={() => {
 					clickMode = 'new-area';
