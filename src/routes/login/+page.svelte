@@ -94,7 +94,7 @@
 
 									<Input
 										id="register-name"
-										name="name"
+										name="name-reg"
 										autocomplete="username-reg"
 										placeholder="KorokHunter"
 										class="mt-2 h-11"

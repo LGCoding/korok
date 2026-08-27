@@ -39,11 +39,11 @@ export const actions: Actions = {
 		const email = formData.get('email-reg')?.toString() ?? '';
 		const password = formData.get('password-reg')?.toString() ?? '';
 		const name = formData.get('name-reg')?.toString() ?? '';
-		if (name.length < 3) {
-			return fail(400, { message: 'Name must be at least 3 characters' });
+		if (name.length < 1) {
+			return fail(400, { message: 'Name must be at least 1 character' });
 		}
-		if (password.length < 5) {
-			return fail(400, { message: 'Password must be at least 5 characters' });
+		if (password.length < 8) {
+			return fail(400, { message: 'Password must be at least 8 characters' });
 		}
 
 		try {
