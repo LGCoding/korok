@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Map from '#lib/components/map.svelte';
+	import Map from '#lib/components/map/map.svelte';
 	import * as Card from '$lib/components/ui/card/';
 	import { onMount } from 'svelte';
 	import { getAreas, getKoroks } from './query/korok.remote';

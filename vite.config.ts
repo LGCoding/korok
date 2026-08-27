@@ -28,6 +28,9 @@ export default defineConfig({
 			$lib: path.resolve('./src/lib')
 		}
 	},
+	optimizeDeps: {
+		exclude: ['maplibre-gl']
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

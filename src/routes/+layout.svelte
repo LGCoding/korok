@@ -8,8 +8,11 @@
 	import { cn } from '$lib/utils';
 	import { page } from '$app/state';
 	import { MoonIcon, SunIcon } from 'lucide-svelte';
+	import 'maplibre-gl/dist/maplibre-gl.css';
+	import { getMyFinds } from './query/korok.remote';
 
 	let { children, data }: PageServerData = $props();
+	let myfinds = $derived(getMyFinds({ userId: data.user.id }));
 </script>
 
 {#snippet link({ label, href }: { label: string; href: string })}
@@ -56,13 +59,16 @@
 				{#if !data.user}
 					{@render link({ href: '/login', label: 'Login/Register' })}
 				{:else}
+					<span class="mr-2 rounded border p-1 font-[hylia] text-secondary-foreground shadow-sm">
+						{data.user?.name}: {await myfinds?.then((f) => f.koroksFound)} koroks
+					</span>
 					<form
 						class="flex flex-1 items-center justify-between pr-2"
 						method="post"
 						action="/login/?/signOut"
 						use:enhance
 					>
-						<Button variant="outline" type="submit">{data.user?.name}: Sign out</Button>
+						<Button variant="outline" type="submit">Sign out</Button>
 					</form>
 				{/if}
 				<Button onclick={toggleMode} variant="outline" size="icon">

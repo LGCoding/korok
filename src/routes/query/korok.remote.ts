@@ -226,6 +226,22 @@ export const getUserFinds = query(async () => {
 	return userStats;
 });
 
+export const getMyFinds = query(v.object({ userId: v.string() }), async (e) => {
+	const userStats = await db
+		.select({
+			user: user,
+			koroksFound: count(finds.id),
+			lastFoundAt: max(finds.time)
+		})
+		.from(user)
+		.leftJoin(finds, eq(finds.userId, user.id))
+		.leftJoin(korok, eq(korok.id, finds.korokId))
+		.where(and(eq(korok.isFindable, true), eq(finds.userId, e.userId)))
+		.groupBy(user.id)
+		.orderBy(desc(count(finds.id)), asc(max(finds.time)));
+	return userStats[0];
+});
+
 export const logFind = command(
 	v.object({
 		korokId: v.string(),

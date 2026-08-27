@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Map from '#lib/components/map.svelte';
+	import Map from '#lib/components/map/map.svelte';
 	import * as Dialog from '$lib/components/ui/dialog/';
 	import Label from '#lib/components/ui/label/label.svelte';
 	import Input from '#lib/components/ui/input/input.svelte';
@@ -302,9 +302,13 @@
 								<!-- Number and description -->
 								<div class="flex min-w-0 flex-1 items-center gap-4">
 									<div
-										class="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card font-black text-primary"
+										class="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card p-1 font-black text-primary"
 									>
-										<img alt="korok" class="w-8" src="koroks/k_{korok.type}.png" />
+										<img
+											alt="korok"
+											class="h-auto max-h-full max-w-full"
+											src="koroks/k_{korok.type}.png"
+										/>
 									</div>
 
 									<div class="min-w-0">

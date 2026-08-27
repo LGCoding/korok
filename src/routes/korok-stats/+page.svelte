@@ -2,9 +2,25 @@
 	import { tripleNumber } from '$lib/utils';
 	import * as Card from '$lib/components/ui/card/';
 	import { getKorokFinds } from '../query/korok.remote';
+	import Toggle from '#lib/components/ui/toggle/toggle.svelte';
+	import { ArrowDown01, ArrowUp01 } from 'lucide-svelte';
 
 	let koroks = await getKorokFinds();
-	let sortedKoroks = $derived([...koroks].sort((a, b) => b.findCount - a.findCount));
+	let sortMode = $state('Number');
+	let sortDir = $state('asc');
+	let sortedKoroks = $derived(
+		[...koroks].sort((a, b) => {
+			let el1 = sortDir === 'asc' ? a : b;
+			let el2 = sortDir === 'asc' ? b : a;
+			if (sortMode === 'Number') {
+				return el1.korok.number - el2.korok.number;
+			}
+			if (sortMode === 'Finds') {
+				return el2.findCount - el1.findCount;
+			}
+			return 0;
+		})
+	);
 </script>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
@@ -23,9 +39,24 @@
 					<Card.Title class="text-2xl font-black">Korok Rankings</Card.Title>
 					<Card.Description class="mt-1">Ranked by number of discoveries</Card.Description>
 				</div>
-
-				<div class="rounded-full border-2 border-border bg-background px-4 py-2 font-bold">
-					{koroks.length} Koroks
+				<div class="flex flex-col items-center gap-2">
+					<div class="rounded-full border-2 border-border bg-background px-4 py-2 font-bold">
+						{koroks.length} Koroks
+					</div>
+					<div class="flex gap-2">
+						<Toggle
+							class="hover:bg-primary-100 w-20 bg-primary font-bold text-primary-foreground aria-pressed:bg-primary"
+							variant="outline"
+							onPressedChange={(e) => (sortMode = e ? 'Finds' : 'Number')}>{sortMode}</Toggle
+						>
+						<Toggle
+							class="hover:bg-primary-100 w-8 bg-primary font-bold text-primary-foreground aria-pressed:bg-primary"
+							variant="outline"
+							onPressedChange={(e) => (sortDir = e ? 'desc' : 'asc')}
+						>
+							{#if sortDir === 'desc'}<ArrowDown01 strokeWidth="1.25" />{:else}<ArrowUp01 />{/if}
+						</Toggle>
+					</div>
 				</div>
 			</div>
 		</Card.Header>
@@ -41,7 +72,7 @@
 						<div class="relative flex items-center gap-4">
 							<!-- Rank -->
 							<div
-								class={`flex size-12 shrink-0 items-center justify-center rounded-full border-2 font-black ${
+								class={`flex size-12 shrink-0 items-center justify-center rounded-full border-2 p-1 font-black ${
 									rank === 1
 										? 'border-yellow-600 bg-yellow-400/30 text-yellow-800'
 										: rank === 2
@@ -51,7 +82,11 @@
 												: 'border-border bg-card text-muted-foreground'
 								}`}
 							>
-								<img class="w-4" src={`/koroks/k_${korok.korok.number}.png`} alt="" />
+								<img
+									class="h-auto max-h-full max-w-full"
+									src={`/koroks/k_${korok.korok.type}.png`}
+									alt=""
+								/>
 							</div>
 
 							<!-- Korok number -->
