@@ -268,7 +268,7 @@
 						</Card.Title>
 
 						<Card.Description>
-							{markersFiltered.length} Koroks in this release
+							{markersFiltered.length} Korok{markersFiltered.length !== 1 ? 's' : ''} in this release
 						</Card.Description>
 					</div>
 
@@ -296,13 +296,13 @@
 				<div class="flex flex-col gap-3">
 					{#each markersFiltered as korok (korok.id)}
 						<div
-							class="rounded-xl border-2 border-border/70 bg-background p-4 transition-all hover:border-primary hover:shadow-md"
+							class="rounded-xl border-2 border-border/70 bg-secondary/40 p-4 transition-all hover:border-primary hover:shadow-md"
 						>
 							<div class="flex flex-col gap-4 lg:flex-row lg:items-center">
 								<!-- Number and description -->
 								<div class="flex min-w-0 flex-1 items-center gap-4">
 									<div
-										class="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card p-1 font-black text-primary"
+										class="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card p-1 font-black"
 									>
 										<img
 											alt="korok"
@@ -312,7 +312,7 @@
 									</div>
 
 									<div class="min-w-0">
-										<p class="text-xl font-black text-foreground">
+										<p class="text-xl font-[hylia] text-foreground">
 											Korok #{tripleNumber(korok.number)}
 										</p>
 

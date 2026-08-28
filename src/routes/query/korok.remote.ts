@@ -219,8 +219,8 @@ export const getUserFinds = query(async () => {
 		})
 		.from(user)
 		.leftJoin(finds, eq(finds.userId, user.id))
-		.leftJoin(korok, eq(korok.id, finds.korokId))
-		.where(eq(korok.isFindable, true))
+		.leftJoin(korok, and(eq(korok.id, finds.korokId), eq(korok.isFindable, true)))
+		// No WHERE clause needed now; all users included
 		.groupBy(user.id)
 		.orderBy(desc(count(finds.id)), asc(max(finds.time)));
 	return userStats;

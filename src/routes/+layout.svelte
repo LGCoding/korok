@@ -9,23 +9,9 @@
 	import { page } from '$app/state';
 	import { MoonIcon, SunIcon } from 'lucide-svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { getMyFinds } from './query/korok.remote';
 
 	let { children, data }: PageServerData = $props();
-    let koroksFound = $derived.by(async () => {
-        try {
-            // Guard against missing data or user
-            if (!data?.user?.id) return 0;
-
-            const result = await getMyFinds({ userId: data.user.id });
-            return result?.koroksFound ?? 0;
-        } catch (error) {
-            // Log the actual error so you can debug it
-            console.error('Failed to fetch koroks:', error);
-            return 0;
-        }
-    });
-</script>
+ </script>
 
 {#snippet link({ label, href }: { label: string; href: string })}
     <li>
@@ -43,9 +29,17 @@
 <header class="flex flex-wrap items-center border-b px-6 py-2 lg:px-16 lg:py-0">
     <div class="flex flex-1 items-center justify-between">
         <a href="/">
-            <img class="h-12 w-12" alt="logo" src="korok_hunt_logo.png" />
+            <img style="min-width:48px;" class="h-12 w-12" alt="logo" src="korok_hunt_logo.png" />
         </a>
     </div>
+
+    {#if !data.user}
+        {@render link({ href: '/login', label: 'Login/Register' })}
+    {:else}
+        <span class="bg-secondary/60 mr-5 rounded border p-1 font-[hylia] text-secondary-foreground shadow-sm whitespace-nowrap">
+            {data.user?.name}: {data.koroksFound ?? "???"}
+        </span>
+    {/if}
 
     <label for="menu-toggle" class="pointer-cursor block lg:hidden">
         <svg
@@ -61,29 +55,24 @@
 
     <div class="hidden w-full lg:flex lg:w-auto lg:items-center" id="menu">
         <nav>
-            <ul class="items-center justify-between pt-4 text-base text-foreground lg:flex lg:pt-0">
+            <ul class="font-[hylia] items-center justify-between pt-4 text-base text-foreground lg:flex lg:pt-0">
                 {@render link({ href: '/', label: 'Home' })}
                 {@render link({ href: '/leaderboard', label: 'Leaderboard' })}
-                {@render link({ href: '/korok-stats', label: 'All Koroks' })}
+                {@render link({ href: '/korok-stats', label: 'Koroks' })}
                 {#if data.user?.role === 'admin'}
                     {@render link({ href: '/admin', label: 'Admin' })}
                 {/if}
-                {#if !data.user}
-                    {@render link({ href: '/login', label: 'Login/Register' })}
-                {:else}
-                    <span class="mr-2 rounded border p-1 font-[hylia] text-secondary-foreground shadow-sm">
-                        {data.user?.name}: {koroksFound} koroks
-                    </span>
+                {#if data.user}
                     <form
                         class="flex flex-1 items-center justify-between pr-2"
                         method="post"
                         action="/login/?/signOut"
                         use:enhance
                     >
-                        <Button variant="outline" type="submit">Sign out</Button>
+                        <Button style="margin-top: 10px; margin-bottom: 8px;" class="bg-primary" variant="outline" type="submit">Sign out</Button>
                     </form>
                 {/if}
-                <Button onclick={toggleMode} variant="outline" size="icon">
+                <Button class="bg-card" onclick={toggleMode} variant="outline" size="icon">
                     <SunIcon
                         class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
                     />

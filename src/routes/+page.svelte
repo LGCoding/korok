@@ -46,7 +46,7 @@
 		{
 			question: 'Do I have to look underneath anything?',
 			answer:
-				'Koroks will not be placed on any surfaces facing towards the ground. That means you do not have to look on the underside of every table and bench on campus, for example. In general, all Koroks should be able to be seen in some way without being crouched, but that does not mean you will not have to crouch in order to actually scan a Korok or reach certain areas.'
+				'Traditionally, very few, if any, Koroks are placed on surfaces facing towards the ground. That means you do not have to look on the underside of every table and bench on campus, for example. In general, all Koroks should be able to be seen in some way without being crouched, but that does not mean you will not have to crouch in order to actually scan a Korok or reach certain areas.'
 		},
 		{
 			question: 'Is the parking garage in bounds?',
@@ -60,8 +60,12 @@
 		{
 			question: 'Why did the Korok I scanned throw an error?',
 			answer:
-				" It could be an internet issue or it could be that it wasn't scanned properly. Make sure to try scanning again. If you continue to have issues, feel free to ask for help on our Discord server. Additionally, you will get an error when scanning Koroks from previous events that were not cleaned up. Make sure the sticker you're scanning has the 3rd RPI Korok Hunt logo and matches in size with most of the other stickers. If you find any old Koroks, let us know on Discord."
-		}
+				" It could be an internet issue or it could be that it wasn't scanned properly. Make sure to try scanning again. If you continue to have issues, feel free to ask for help on our Discord server. Additionally, you will get an error when scanning Koroks from previous events that were not cleaned up. Make sure the sticker you're scanning has the 4th RPI Korok Hunt logo and matches in size with most of the other stickers. If you find any old Koroks, let us know on Discord."
+		},
+        {
+            question: 'Do you have any tips on how to improve?',
+            answer: "If you've made it this far down the page, you deserve some pointers on how to improve your hunting skills. As a three-time champion myself, here's my advice: Always keep your head on a swivel, examine the scenery from different perspectives, and don't give up! Try changing up your daily route through campus, and you might be surprised at how many times you've unknowingly walked past a sneaky Korok. Oh, and one more thing: don't forget to look up every once in a while!"
+        }
 	];
 </script>
 
@@ -80,11 +84,7 @@
 			aria-hidden="true"
 		></div>
 
-		<div class="relative px-6 py-12 text-center sm:px-12 sm:py-16">
-			<p class="mb-3 text-sm font-black tracking-[0.35em] text-accent uppercase">
-				4th RPI Korok Hunt
-			</p>
-
+		<div class="relative px-6 py-6 text-center sm:px-12 sm:py-6">
 			<h1
 				class="flex items-center justify-center text-6xl font-black tracking-tight text-foreground sm:text-7xl"
 			>
@@ -97,17 +97,21 @@
 			</p>
 
 			<div class="mt-8 flex flex-wrap justify-center gap-3">
+                <a href="leaderboard">
 				<div
 					class="rounded-full border-2 border-primary bg-primary px-5 py-2.5 font-black text-primary-foreground shadow-sm"
 				>
-					Find Koroks
+					<img class="inline" src="seed.png"/> Find Koroks
 				</div>
+                </a>
 
+                <a href="korok-stats">
 				<div
 					class="rounded-full border-2 border-border bg-secondary px-5 py-2.5 font-black text-secondary-foreground shadow-sm"
 				>
 					<Trophy class="inline" /> Compete for the Top 3
 				</div>
+                </a>
 			</div>
 		</div>
 	</section>
@@ -132,11 +136,11 @@
 				</p>
 
 				<div class="mt-6 rounded-2xl border-2 border-primary/40 bg-primary/10 p-5">
-					<p class="font-black text-primary">The prize</p>
+					<p class="font-black text-primary">The Prize</p>
 
 					<p class="mt-1">
-						The <strong>top three players</strong> by the end of May 3rd will win a
-						<strong>Korok plushie!</strong>
+						The <strong>top three players</strong> by November 1st will win a
+						<a style="text-decoration: underline;" class="text-primary" href="/prize.png"><strong>Korok plushie</strong></a>!
 					</p>
 				</div>
 
